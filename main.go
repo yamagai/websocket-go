@@ -3,61 +3,59 @@ package main
 import (
 	"log"
 	"net/http"
-
-	"github.com/gorilla/websocket"
 )
 
-// WebSocket サーバーにつなぎにいくクライアント
-var clients = make(map[*websocket.Conn]bool)
+// // WebSocket サーバーにつなぎにいくクライアント
+// var clients = make(map[*websocket.Conn]bool)
 
-// クライアントから受け取るメッセージを格納
-var broadcast = make(chan Message)
+// // クライアントから受け取るメッセージを格納
+// var broadcast = make(chan Message)
 
-// WebSocket 更新用
-var upgrader = websocket.Upgrader{}
+// // WebSocket 更新用
+// var upgrader = websocket.Upgrader{}
 
-// クライアントからは JSON 形式で受け取る
-type Message struct {
-	Message string `json:message`
-}
+// // クライアントからは JSON 形式で受け取る
+// type Message struct {
+// 	Message string `json:message`
+// }
 
-// クライアントのハンドラ
-func HandleClients(w http.ResponseWriter, r *http.Request) {
-	// ゴルーチンで起動
-	go broadcastMessagesToClients()
+// // クライアントのハンドラ
+// func HandleClients(w http.ResponseWriter, r *http.Request) {
+// 	// ゴルーチンで起動
+// 	go broadcastMessagesToClients()
 
-	var upgrader = websocket.Upgrader{
-		ReadBufferSize:  1024,
-		WriteBufferSize: 1024,
-		// Add this lines
-		CheckOrigin: func(r *http.Request) bool {
-			return true
-		},
-	}
+// 	var upgrader = websocket.Upgrader{
+// 		ReadBufferSize:  1024,
+// 		WriteBufferSize: 1024,
+// 		// Add this lines
+// 		CheckOrigin: func(r *http.Request) bool {
+// 			return true
+// 		},
+// 	}
 
-	// websocket の状態を更新
-	websocket, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		log.Fatal("error upgrading GET request to a websocket::", err)
-	}
-	// websocket を閉じる
-	defer websocket.Close()
+// 	// websocket の状態を更新
+// 	websocket, err := upgrader.Upgrade(w, r, nil)
+// 	if err != nil {
+// 		log.Fatal("error upgrading GET request to a websocket::", err)
+// 	}
+// 	// websocket を閉じる
+// 	defer websocket.Close()
 
-	clients[websocket] = true
+// 	clients[websocket] = true
 
-	for {
-		var message Message
-		// メッセージ読み込み
-		err := websocket.ReadJSON(&message)
-		if err != nil {
-			log.Printf("error occurred while reading message: %v", err)
-			delete(clients, websocket)
-			break
-		}
-		// メッセージを受け取る
-		broadcast <- message
-	}
-}
+// 	for {
+// 		var message Message
+// 		// メッセージ読み込み
+// 		err := websocket.ReadJSON(&message)
+// 		if err != nil {
+// 			log.Printf("error occurred while reading message: %v", err)
+// 			delete(clients, websocket)
+// 			break
+// 		}
+// 		// メッセージを受け取る
+// 		broadcast <- message
+// 	}
+// }
 
 func main() {
 	// localhost:8080 でアクセスした時に index.html を読み込む
@@ -65,7 +63,7 @@ func main() {
 		http.ServeFile(w, r, "/app/index.html")
 	})
 
-	http.HandleFunc("/chat", HandleClients)
+	// http.HandleFunc("/sub", HandleClients)
 
 	err := http.ListenAndServe(":8080", nil)
 	if err != nil {
@@ -74,19 +72,19 @@ func main() {
 	}
 }
 
-func broadcastMessagesToClients() {
-	for {
-		// メッセージ受け取り
-		message := <-broadcast
-		// クライアントの数だけループ
-		for client := range clients {
-			// 書き込む
-			err := client.WriteJSON(message)
-			if err != nil {
-				log.Printf("error occurred while writing message to client: %v", err)
-				client.Close()
-				delete(clients, client)
-			}
-		}
-	}
-}
+// func broadcastMessagesToClients() {
+// 	for {
+// 		// メッセージ受け取り
+// 		message := <-broadcast
+// 		// クライアントの数だけループ
+// 		for client := range clients {
+// 			// 書き込む
+// 			err := client.WriteJSON(message)
+// 			if err != nil {
+// 				log.Printf("error occurred while writing message to client: %v", err)
+// 				client.Close()
+// 				delete(clients, client)
+// 			}
+// 		}
+// 	}
+// }
