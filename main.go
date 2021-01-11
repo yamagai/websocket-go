@@ -26,6 +26,15 @@ func HandleClients(w http.ResponseWriter, r *http.Request) {
 	// ゴルーチンで起動
 	go broadcastMessagesToClients()
 
+	var upgrader = websocket.Upgrader{
+		ReadBufferSize:  1024,
+		WriteBufferSize: 1024,
+		// Add this lines
+		CheckOrigin: func(r *http.Request) bool {
+			return true
+		},
+	}
+
 	// websocket の状態を更新
 	websocket, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
