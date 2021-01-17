@@ -1,6 +1,13 @@
 version: "3.7"
 
 services:
+  mysql:
+    restart: always
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - 3306:3306
   redis:
     image: redis:6.0.9
     ports:
@@ -20,3 +27,5 @@ services:
     container_name: websocket_go
     ports:
       - 8080:8080
+    depends_on:
+      - mysql
